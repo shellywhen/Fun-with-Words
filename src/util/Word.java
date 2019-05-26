@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
 
@@ -30,44 +29,42 @@ public class Word {
 		this.word = w;
 		this.phonetic = p;
 		this.meaning = m;
-		try {
-			this.pronunciation = loadPronunciation(w);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 	/**
-	 * Load Pronunciation from youdao.dict API
+	 * Load Pronunciation from youdao.dict API and play the audio.
 	 * @param word the spelling of the particular word
 	 * @return the Player of the music
-	 * @throws Exception
+	 * @throws JavaLayerException failed to load music
 	 */
-	public static Player loadPronunciation(String word) throws Exception {
-		URL url = new URL(Word.url+word);
-		URLConnection connection = null;
+	public static boolean loadPronunciation(String word) throws JavaLayerException{
+		BufferedInputStream bis = null;
+		if(word.contains(" ")) return false; // unable to handle phrase
 		try {
+			URL url = new URL(Word.url+word);
+			URLConnection connection = null;
 			connection = url.openConnection();
+			InputStream s_ipStream =  connection.getInputStream();
+		    bis = new BufferedInputStream(s_ipStream);
+		    Player player = new Player(bis);
+			player.play();
+			return true;
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-		BufferedInputStream bis = null;
-		try {
-			InputStream s_ipStream =  connection.getInputStream();
-		    bis = new BufferedInputStream(s_ipStream);
-		}catch (IOException e){
-			e.printStackTrace();
-		}
-		return new Player(bis);
+		return false;	
 	}
-	public void print() {
+	/**
+	 * Debug function, print details of word.
+	 */
+	public Word print() {
 		System.out.println(word);
 		System.out.println(phonetic);
 		System.out.println(meaning);
 		try {
-			pronunciation.play();
+          this.loadPronunciation(this.word);
 		} catch (JavaLayerException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return this;
 	}
 }
