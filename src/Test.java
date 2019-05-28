@@ -5,6 +5,8 @@
  */
 import util.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
 import javazoom.jl.player.Player;
 
 public class Test {
@@ -16,10 +18,10 @@ public class Test {
 		TestDb("test");
 	}
 	
-//	static public void main(String[] args) {
-//		new Test();
-//	}
-//	
+	static public void main(String[] args) {
+		new Test();
+	}
+	
 	protected void TestPronunce(String word) {
 		// PRONUNCE A GIVEN WORD
 		try {
@@ -39,21 +41,25 @@ public class Test {
 			
 			// LOG IN TO THE DATABASE
 	        db = new Database("Nancy", "123456");
+	        ArrayList<Word> userList = db.getLearnedWords(); // get the words visited by current user
+	        for(Word w:userList) {
+	        	System.out.printf("User: %s %s %s %s %d %d\n", w.word, w.phonetic,
+	        			w.meaning, w.visit_date, w.level, w.mark);
+	        }
 	        
 	        // SEARCH FOR A GIVEN WORD
 			Word result = db.queryWord(word);
 			result.print();
 			
 			// UPDATE A WORD STATE (automatically update or insert)
-			int familiarity = db.queryLevel(word); // get familiarity
-			int starred  = db.queryMark(word);  // get the starred state
-			boolean flag = db.updateLog("sing", familiarity+1, starred);
+			db.queryInfo(result);  // get the user information of this word
+			boolean flag = db.updateLog("sing", result.level+1, result.mark);
         	System.out.println("Update: "+new Boolean(flag).toString());
 
 			// System.out.println(db.wordList.size());
 	        db.next().print();
 	        
-	        // REMEMBER TO CLOSE CONNECTION£¡£¡£¡£¡£¡£¡£¡
+	        // REMEMBER TO CLOSE CONNECTION!!!!!!!!
 			db.close();
 		} catch (ClassNotFoundException | SQLException | LoginException e) {
 			e.printStackTrace();

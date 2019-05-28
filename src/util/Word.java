@@ -19,6 +19,9 @@ public class Word {
 	public String phonetic;
 	public String meaning;
 	public Player pronunciation;
+	public int level = 0;
+	public String visit_date = "";
+	public int mark =0;
 	/**
 	 * Create an instance of the word.
 	 * @param w word spelling

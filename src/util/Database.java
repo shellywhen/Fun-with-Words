@@ -135,57 +135,63 @@ public class Database {
 	}
 
 	/**
-	 * Get the level of user to a certain word.
+	 * Get the list of visited words of current user.
 	 * 
-	 * @param word string of the particular word
-	 * @return integer level index
+	 * @return ArrayList of Word instances
 	 */
-	public int queryLevel(String word) {
+	public ArrayList<Word> getLearnedWords() {
 		ResultSet result;
-		int level = 0;
+		ArrayList<Word> wordlist = new ArrayList<Word>();
 		try {
 			statement = conn.createStatement();
-			String query = "SELECT * FROM log WHERE word=\"" + word + "\"" + "AND user = \"" + this.user + "\";";
+			String query = "SELECT * FROM(SELECT * FROM log WHERE user = \"" + this.user + "\") NATURAL JOIN word;";
 			result = statement.executeQuery(query);
-			if (result.next()) {
-				level = result.getInt("level");
+			while (result.next()) {
+				String name = result.getString("word");
+				String phone = result.getString("prounce_uk");
+				String mean = result.getString("trans");
+				Word instance = new Word(name,phone,mean);
+				instance.mark = result.getInt("mark");
+			    instance.level = result.getInt("level");
+				instance.visit_date = result.getString("date");
+				wordlist.add(instance);
 			}
 			result.close();
 			statement.close();
-			return level;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return 0;
 		}
+		return wordlist;
 	}
 
 	/**
-	 * Query the mark of this word.
+	 * Query the mark, level and visited date of this word. 
 	 * 
 	 * @param word word to be updated
-	 * @return the mark whether this is a new word
+	 * @return the word object with updated information
 	 */
-	public int queryMark(String word) {
+	public Word queryInfo(Word word) {
 		ResultSet result;
 		try {
 			statement = conn.createStatement();
-			String query = "SELECT * FROM log WHERE word=\"" + word + "\"" + "AND user = \"" + this.user + "\";";
+			String query = "SELECT * FROM log WHERE word=\"" + word.word + "\"" + "AND user = \"" + this.user + "\";";
 			result = statement.executeQuery(query);
-			int mark = 0;
 			if (result.next()) {
-				mark = result.getInt("mark");
+				word.mark = result.getInt("mark");
+				word.level = result.getInt("level");
+				word.visit_date = result.getString("date");
 			}
 			result.close();
 			statement.close();
-			return mark;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return 0;
 		}
+			return word;
+		
 	}
 
 	/**
-	 * Update the log for all users.
+	 * Update the log for users.
 	 * 
 	 * @param word  string of the word
 	 * @param level expertise of the user to the word
